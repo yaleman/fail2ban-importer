@@ -1,0 +1,9 @@
+-r requirements.txt
+pylint
+pytest
+
+flit
+black
+
+mypy
+boto3-stubs
