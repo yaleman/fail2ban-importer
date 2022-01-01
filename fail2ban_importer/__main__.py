@@ -229,19 +229,24 @@ def download_and_ban(config_object):
         data: dict = config_object["download_method"](config_object)
 
     for item in data:
-        logging.info(
-            "jail=%s target=%s",
-            item[config_object["jail_field"]],
-            item[config_object["jail_target"]],
-        )
         if '--dryrun' not in sys.argv:
+            jail = item.get(config_object["jail_field"])
+            target = item.get(config_object["jail_target"])
+            if not (jail and target):
+                logging.error("Couldn't find jail and target in object: %s", item)
+                continue
+            logging.info(
+                "jail=%s target=%s",
+                item[config_object["jail_field"]],
+                item[config_object["jail_target"]],
+            )
             subprocess.call(
                 [
                     config_object["fail2ban_client"],
                     "set",
-                    item[config_object["jail_field"]],
+                    jail,
                     "banip",
-                    item[config_object["jail_target"]],
+                    target,
                 ],
             )
 
