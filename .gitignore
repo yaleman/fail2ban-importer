@@ -3,5 +3,4 @@ __pycache__/*
 *.json
 venv/
 .DS_Store
-dist/
 **/__pycache__/*
