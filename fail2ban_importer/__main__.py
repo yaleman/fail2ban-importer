@@ -6,12 +6,13 @@
 
 import json
 from json.decoder import JSONDecodeError
+
+import subprocess
 import logging
 import os
 import sys
-import subprocess
 from time import sleep
-from typing import Optional, TypedDict, Callable #, Union
+from typing import Callable, TypedDict, Optional
 from urllib.parse import urlparse
 
 VALID_LOGLEVELS = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARNING"]
@@ -28,26 +29,25 @@ logging.basicConfig(
 
 logging.debug("Running %s", os.path.basename(__file__))
 
-FAILED_IMPORT = False
+main_failed_import = False  # pylint: disable=invalid-name
 try:
     import boto3
     import boto3.session
     import botocore.exceptions
     import requests
-    import schedule # type: ignore
-
+    import schedule  # type: ignore
 except ImportError as error_message:
-    FAILED_IMPORT = True
+    main_failed_import = True  # pylint: disable=invalid-name
     logging.error("Failed to import package: %s", error_message)
-
-if FAILED_IMPORT:
+if main_failed_import:
     sys.exit(1)
+
 
 CONFIG_DEFAULTS = [
     ("jail_field", "jail"),
     ("jail_target", "target"),
-    ("fail2ban_client","fail2ban-client"),
-    ("schedule_mins",5),
+    ("fail2ban_client", "fail2ban-client"),
+    ("schedule_mins", 5),
 ]
 
 CONFIG_FILE = "fail2ban_importer.json"
@@ -70,7 +70,6 @@ EXPECTED_CONFIG_FIELDS = [
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
     "AWS_PROFILE",
-
 ]
 
 REQUIRED_CONFIG_FIELDS = [
@@ -84,40 +83,48 @@ CONFIG_TYPING = TypedDict(
         "fail2ban_client": str,
         "jail_field": str,
         "jail_target": str,
-        "schedule_mins" : int,
-
+        "schedule_mins": int,
         "source": str,
-
-        "s3_endpoint" : str,
-        "s3_v4" : bool,
-        "s3_minio" : bool,
-
-        "AWS_ACCESS_KEY_ID" : str,
-        "AWS_CONFIG_FILE" : str,
-        "AWS_SECRET_ACCESS_KEY" : str,
-        "AWS_PROFILE" : str,
+        "s3_endpoint": str,
+        "s3_v4": bool,
+        "s3_minio": bool,
+        "AWS_ACCESS_KEY_ID": str,
+        "AWS_CONFIG_FILE": str,
+        "AWS_SECRET_ACCESS_KEY": str,
+        "AWS_PROFILE": str,
     },
 )
+
 
 class UnsupportedSourceType(Exception):
     """Unsupported Source"""
 
 
-def load_config() -> Optional[CONFIG_TYPING]:
-    """looks for config files and loads them"""
-    for filename in CONFIG_FILES:
-        if os.path.exists(filename):
-            logging.debug("Using config file: %s", filename)
-            with open(filename, "r", encoding="utf8") as file_handle:
-                try:
-                    imported_config: CONFIG_TYPING = json.load(file_handle)
-
-                    return imported_config
-                except JSONDecodeError as json_error:
-                    logging.error(
-                        "Failed to load %s due to JSON error: %s", filename, json_error
-                    )
-    return None
+def ban_action(client_command: str, jail_name: str, target_ip: str) -> bool:
+    """ actually does the ban bit """
+    command = [
+        client_command,
+        "set",
+        jail_name,
+        "banip",
+        target_ip,
+    ]
+    try:
+        result = subprocess.run(command, check=True)
+        if getattr(result, "stdout") == "1":
+            logging.debug("Success")
+        elif getattr(result, "stdout") == "0":
+            logging.debug("%s already in %s", target_ip, jail_name)
+    except subprocess.CalledProcessError as called_process_error:
+        command_joined = " ".join(command)
+        logging.error(
+            "Error running '%s': stdout='%s', stderr='%s'",
+            command_joined,
+            called_process_error.stdout,
+            called_process_error.stderr,
+        )
+        return False
+    return True
 
 
 def download_with_requests(download_config: CONFIG_TYPING) -> Optional[dict]:
@@ -147,14 +154,19 @@ def download_with_s3(download_config: dict) -> Optional[dict]:
         parsed_s3_url = urlparse(download_config["source"])
         logging.debug(parsed_s3_url)
     except ValueError as url_parser_error:
-        logging.error("Failed to parse s3 url  '%s': %s", download_config["source"], url_parser_error)
+        logging.error(
+            "Failed to parse s3 url  '%s': %s",
+            download_config["source"],
+            url_parser_error,
+        )
         sys.exit(1)
 
-    for var in ["AWS_ACCESS_KEY_ID",
+    for var in [
+        "AWS_ACCESS_KEY_ID",
         "AWS_SECRET_ACCESS_KEY",
         "AWS_CONFIG_FILE",
         "AWS_PROFILE",
-        ]:
+    ]:
         if not os.getenv(var, None):
             if download_config.get(var):
                 os.environ[var] = download_config.get(var, "")
@@ -162,11 +174,11 @@ def download_with_s3(download_config: dict) -> Optional[dict]:
     logging.debug("Creating s3 client")
     s3_config = None
     if download_config.get("s3_minio", False) or download_config.get("s3_v4", False):
-        s3_config=boto3.session.Config(signature_version='v4') # type: ignore
-
+        s3_config = boto3.session.Config(signature_version="v4")  # type: ignore
 
     if "s3_endpoint" in download_config:
-        s3_resource = boto3.resource("s3",
+        s3_resource = boto3.resource(
+            "s3",
             endpoint_url=download_config["s3_endpoint"],
             config=s3_config,
         )
@@ -193,6 +205,24 @@ def download_with_s3(download_config: dict) -> Optional[dict]:
         logging.error("First 1000 chars of response: %s", content[:1000])
         return {}
 
+
+def load_config() -> Optional[CONFIG_TYPING]:
+    """looks for config files and loads them"""
+    for filename in CONFIG_FILES:
+        if os.path.exists(filename):
+            logging.debug("Using config file: %s", filename)
+            with open(filename, "r", encoding="utf8") as file_handle:
+                try:
+                    imported_config: CONFIG_TYPING = json.load(file_handle)
+
+                    return imported_config
+                except JSONDecodeError as json_error:
+                    logging.error(
+                        "Failed to load %s due to JSON error: %s", filename, json_error
+                    )
+    return None
+
+
 def parse_config(config_to_parse: CONFIG_TYPING) -> CONFIG_TYPING:
     """ loads the data file """
     failed_to_load = False
@@ -217,10 +247,11 @@ def parse_config(config_to_parse: CONFIG_TYPING) -> CONFIG_TYPING:
 
     for field, value in CONFIG_DEFAULTS:
         if field not in config_to_parse:
-            config_to_parse[field] = value #type: ignore
+            config_to_parse[field] = value  # type: ignore
             logging.debug("Setting default: %s=%s", field, value)
 
     return config_to_parse
+
 
 def download_and_ban(config_object):
     """ main action activity """
@@ -229,7 +260,7 @@ def download_and_ban(config_object):
         data: dict = config_object["download_method"](config_object)
 
     for item in data:
-        if '--dryrun' not in sys.argv:
+        if "--dryrun" not in sys.argv:
             jail = item.get(config_object["jail_field"])
             target = item.get(config_object["jail_target"])
             if not (jail and target):
@@ -240,37 +271,36 @@ def download_and_ban(config_object):
                 item[config_object["jail_field"]],
                 item[config_object["jail_target"]],
             )
-            subprocess.call(
-                [
-                    config_object["fail2ban_client"],
-                    "set",
-                    jail,
-                    "banip",
-                    target,
-                ],
-            )
+            ban_action(config_object["fail2ban_client"], jail, target)
+
 
 def cli():
     """ main CLI thingie """
 
-    if '--help' in sys.argv or '-h' in sys.argv:
-        print(f"""Usage: {os.path.basename(__file__)} [OPTIONS]
+    if "--help" in sys.argv or "-h" in sys.argv:
+        print(
+            f"""Usage: {os.path.basename(__file__)} [OPTIONS]
 
     Options:
     --dryrun         Test config/pulling data but don't make changes.
     --oneshot        Run this once and exit.
     -h, --help       Show this message and exit.
-    """)
+    """
+        )
         sys.exit()
 
     # MAIN BIT
     config: Optional[CONFIG_TYPING] = load_config()
     if not config:
         config_files_joined = ",".join(CONFIG_FILES)
-        logging.error("Failed to find/load config file, looked in %s", config_files_joined)
+        logging.error(
+            "Failed to find/load config file, looked in %s", config_files_joined
+        )
         sys.exit(1)
 
-    logging.debug("Config: %s", json.dumps(config, indent=4, ensure_ascii=False, default=str))
+    logging.debug(
+        "Config: %s", json.dumps(config, indent=4, ensure_ascii=False, default=str)
+    )
 
     config = parse_config(config)
 
@@ -278,12 +308,13 @@ def cli():
 
     download_and_ban(config)
 
-    if '--oneshot' not in sys.argv and '--dryrun' not in sys.argv:
+    if "--oneshot" not in sys.argv and "--dryrun" not in sys.argv:
         logging.info("Running every %s minutes", config["schedule_mins"])
         schedule.every(config["schedule_mins"]).minutes.do(download_and_ban, config)
         while True:
             schedule.run_pending()
             sleep(10)
+
 
 if __name__ == "__main__":
     cli()
