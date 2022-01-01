@@ -261,7 +261,7 @@ def cli():
     # MAIN BIT
     config: Optional[CONFIG_TYPING] = load_config()
     if not config:
-        logging.error("Failed to find/load config file.", file=sys.stderr)
+        logging.error("Failed to find/load config file.")
         sys.exit(1)
 
     logging.debug("Config: %s", json.dumps(config, indent=4, ensure_ascii=False, default=str))
