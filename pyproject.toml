@@ -51,7 +51,7 @@ fail2ban_importer = "fail2ban_importer.__main__:cli"
 exclude = [
     "requirements*.txt",
     "*.json",
-    "mypy.ini",
+    "mypi.ini",
     ".gitignore",
     ".pylintrc"
 ]
