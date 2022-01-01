@@ -2,6 +2,14 @@
 
 Grabs a JSON-encoded list of things to ban and bans them using [fail2ban](https://www.fail2ban.org).
 
+# Installation
+
+`python3 -m pip install --upgrade fail2ban-importer`
+
+# Usage
+
+`fail2ban_importer [--oneshot|--dryrun]`
+
 # Configuration
 
 Config file can be in one of the following paths:
