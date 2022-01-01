@@ -7,3 +7,4 @@ black
 
 mypy
 boto3-stubs
+types-requests
