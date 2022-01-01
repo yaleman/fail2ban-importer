@@ -2,21 +2,27 @@
 
 """ loads things from s3 or an s3-like thing, or maybe just https """
 
+# TODO: whitelisting
+
 import json
 from json.decoder import JSONDecodeError
 import logging
 import os
 import sys
-from typing import Optional, TypedDict, Callable #Type, Union,
+import subprocess
+from typing import Optional, TypedDict, Callable  # Type, Union,
 
-VALID_LOGLEVELS = ['CRITICAL', 'DEBUG', 'ERROR', 'FATAL',"INFO", "WARNING"]
+VALID_LOGLEVELS = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARNING"]
 loglevel = os.getenv("LOG_LEVEL", "DEBUG").upper()
 if not hasattr(logging, loglevel):
-    raise ValueError(f"Invalid log level specified, got {loglevel}, should be in {VALID_LOGLEVELS}")
+    raise ValueError(
+        f"Invalid log level specified, got {loglevel}, should be in {VALID_LOGLEVELS}"
+    )
 
-logging.basicConfig(format="%(levelname)s %(message)s", level=getattr(logging,loglevel))
+logging.basicConfig(
+    format="%(levelname)s %(message)s", level=getattr(logging, loglevel)
+)
 
-# logging = logging.getlogging()
 logging.debug("Running %s", os.path.basename(__file__))
 
 FAILED_IMPORT = False
@@ -49,16 +55,21 @@ REQUIRED_CONFIG_FIELDS = [
     "source",
 ]
 
-CONFIG_TYPING = TypedDict("CONFIG_TYPING", {
-    "source" : str,
-    "download_method" : Callable,
-    "fail2ban_client" : Optional[str],
-    "jail_field" : Optional[str],
-    "jail_target" : Optional[str],
-})
+CONFIG_TYPING = TypedDict(
+    "CONFIG_TYPING",
+    {
+        "source": str,
+        "download_method": Callable,
+        "fail2ban_client": str,
+        "jail_field": str,
+        "jail_target": str,
+    },
+)
+
 
 class UnsupportedSourceType(Exception):
     """Unsupported Source"""
+
 
 def load_config() -> Optional[CONFIG_TYPING]:
     """looks for config files and loads them"""
@@ -71,13 +82,16 @@ def load_config() -> Optional[CONFIG_TYPING]:
 
                     return imported_config
                 except JSONDecodeError as json_error:
-                    logging.error("Failed to load %s due to JSON error: %s", filename, json_error)
+                    logging.error(
+                        "Failed to load %s due to JSON error: %s", filename, json_error
+                    )
     return None
+
 
 def download_with_requests(download_config: CONFIG_TYPING) -> Optional[dict]:
     """ downloads the source file using the requests library """
     logging.debug("Download config: %s", download_config)
-    request_method = str(download_config.get("request_method","GET"))
+    request_method = str(download_config.get("request_method", "GET"))
     response = requests.request(
         url=download_config["source"],
         method=request_method,
@@ -93,6 +107,7 @@ def download_with_requests(download_config: CONFIG_TYPING) -> Optional[dict]:
 
     return response_data
 
+
 def download_with_s3(download_config: dict) -> Optional[dict]:
     """ downloads the source file using the requests library """
     logging.debug(download_config)
@@ -100,6 +115,7 @@ def download_with_s3(download_config: dict) -> Optional[dict]:
     # s3client.get_object(Bucket=download_config["bucket"], Key="filename")
 
     return {}
+
 
 def parse_config(config_to_parse: CONFIG_TYPING) -> CONFIG_TYPING:
     """ loads the data file """
@@ -115,11 +131,13 @@ def parse_config(config_to_parse: CONFIG_TYPING) -> CONFIG_TYPING:
         sys.exit(1)
     if config_to_parse["source"].startswith("http"):
         config_to_parse["download_method"] = download_with_requests
-    elif config_to_parse["source"].startswith('s3:'):
+    elif config_to_parse["source"].startswith("s3:"):
         config_to_parse["download_method"] = download_with_s3
     else:
         config_to_parse["download_method"] = sys.exit
-        raise UnsupportedSourceType(f"Can't handle this: {config_to_parse.get('source')!r}")
+        raise UnsupportedSourceType(
+            f"Can't handle this: {config_to_parse.get('source')!r}"
+        )
 
     if "jail_field" not in config_to_parse:
         config_to_parse["jail_field"] = "jail"
@@ -147,14 +165,18 @@ logging.debug(json.dumps(config, indent=4, ensure_ascii=False, default=str))
 if "download_method" in config:
     data: dict = config["download_method"](config)
 
-# logging.debug(json.dumps(data, ensure_ascii=False, indent=4))
-
 for item in data:
     logging.info(
         "jail=%s target=%s",
         item[config["jail_field"]],
         item[config["jail_target"]],
     )
-
-
-# subprocess.call([fail2ban_client, 'set', jail, action, ip_address])
+    subprocess.call(
+        [
+            config["fail2ban_client"],
+            "set",
+            item[config["jail_field"]],
+            "banip",
+            item[config["jail_target"]],
+        ],
+    )
