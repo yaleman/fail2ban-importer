@@ -171,12 +171,13 @@ for item in data:
         item[config["jail_field"]],
         item[config["jail_target"]],
     )
-    subprocess.call(
-        [
-            config["fail2ban_client"],
-            "set",
-            item[config["jail_field"]],
-            "banip",
-            item[config["jail_target"]],
-        ],
-    )
+    if '--dryrun' not in sys.argv:
+        subprocess.call(
+            [
+                config["fail2ban_client"],
+                "set",
+                item[config["jail_field"]],
+                "banip",
+                item[config["jail_target"]],
+            ],
+        )
