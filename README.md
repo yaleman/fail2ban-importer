@@ -4,6 +4,12 @@ Grabs a JSON-encoded list of things to ban and bans them using [fail2ban](https:
 
 # Configuration
 
+Config file can be in one of the following paths:
+
+ - `./fail2ban_importer.json`
+ - `~/.config/fail2ban_importer.json`
+ - `/etc/fail2ban_importer.json`
+
 Fields 
 | Field Name | Value Type | Default Value | Description | Required |
 | --- | --- | --- | --- | --- |

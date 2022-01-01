@@ -50,11 +50,11 @@ CONFIG_DEFAULTS = [
     ("schedule_mins",5),
 ]
 
-CONFIG_FILE = os.path.basename(__file__).rstrip(".py")+".json"
+CONFIG_FILE = "fail2ban_importer.json"
 
 CONFIG_FILES = [
     CONFIG_FILE,
-    f"~/.config/{CONFIG_FILE}",
+    os.path.expanduser(f"~/.config/{CONFIG_FILE}"),
     f"/etc/{CONFIG_FILE}",
 ]
 
@@ -261,7 +261,8 @@ def cli():
     # MAIN BIT
     config: Optional[CONFIG_TYPING] = load_config()
     if not config:
-        logging.error("Failed to find/load config file.")
+        config_files_joined = ",".join(CONFIG_FILES)
+        logging.error("Failed to find/load config file, looked in %s", config_files_joined)
         sys.exit(1)
 
     logging.debug("Config: %s", json.dumps(config, indent=4, ensure_ascii=False, default=str))
