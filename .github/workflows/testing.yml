@@ -15,7 +15,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
       - name: Running pylint
         uses: fylein/python-pylint-github-action@v4
         with:
