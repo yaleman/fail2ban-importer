@@ -18,18 +18,15 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-      - name: Running pylint
-        uses: fylein/python-pylint-github-action@v4
-        with:
           args: |
             python3 -m pip install --upgrade pip
             python3 -m pip install -r requirements-dev.txt
             python3 --version
             python3 -m pylint --rcfile=.pylintrc fail2ban_importer
 
-      - name: Running mypy
-        uses: fylein/python-pylint-github-action@v4
+      - uses: actions/setup-python@v2
         with:
+          python-version: '3.9'
           args: |
             python3 -m pip install --upgrade pip
             python3 -m pip install -r requirements-dev.txt
