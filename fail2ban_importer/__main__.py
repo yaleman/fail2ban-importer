@@ -269,13 +269,7 @@ def download_and_ban(config_object):
             if not (jail and target):
                 logging.error("Couldn't find jail and target in object: %s", item)
                 continue
-            logging.info(
-                "jail=%s target=%s",
-                item[config_object["jail_field"]],
-                item[config_object["jail_target"]],
-            )
             ban_action(config_object["fail2ban_client"], jail, target)
-
 
 def cli():
     """ main CLI thingie """
