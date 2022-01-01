@@ -112,9 +112,9 @@ def ban_action(client_command: str, jail_name: str, target_ip: str) -> bool:
     try:
         result = subprocess.run(command, check=True, capture_output=True)
         # logging.debug(result)
-        if result.stdout == "1":
+        if result.stdout.decode("utf-8").strip() == "1":
             logging.debug("Success")
-        elif result.stdout == "0":
+        elif result.stdout.decode("utf-8").strip() == "0":
             logging.debug("%s already in %s", target_ip, jail_name)
         else:
             logging.error("Unexpected output: %s", result.stdout.decode("utf-8").strip())
