@@ -1,0 +1,34 @@
+name: test the things
+
+on:
+  push:
+    branches:
+      - main  # Set a branch to deploy
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Running pylint
+        uses: fylein/python-pylint-github-action@v4
+        with:
+          args: |
+            python3 -m pip install --upgrade pip
+            python3 -m pip install -r requirements-dev.txt
+            python3 -m pylint --rcfile=.pylintrc fail2ban_importer
+
+      - name: Running mypy
+        uses: fylein/python-pylint-github-action@v4
+        with:
+          args: |
+            python3 -m pip install --upgrade pip
+            python3 -m pip install -r requirements-dev.txt
+            python3 -m mypy fail2ban_importer
+
