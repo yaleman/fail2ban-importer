@@ -22,6 +22,7 @@ jobs:
           args: |
             python3 -m pip install --upgrade pip
             python3 -m pip install -r requirements-dev.txt
+            python3 --version
             python3 -m pylint --rcfile=.pylintrc fail2ban_importer
 
       - name: Running mypy
