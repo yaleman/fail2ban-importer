@@ -1,6 +1,7 @@
 .vscode
 __pycache__/*
 *.json
+!example.json
 venv/
 .DS_Store
 **/__pycache__/*
