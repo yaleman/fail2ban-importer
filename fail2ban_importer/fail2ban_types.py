@@ -16,6 +16,7 @@ class ConfigFile(BaseModel):
     schedule_mins: int = 15
     dryrun: bool = False
     oneshot: bool = False
+    ignore_list: List[str] = [ "127.0.0.1", ]
 
 
 class ConfigFileHTTP(ConfigFile):

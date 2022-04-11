@@ -2,8 +2,6 @@
 
 """ loads things from s3 or an s3-like thing, or maybe just https """
 
-# TODO: allow-listing
-
 import json
 
 import logging

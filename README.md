@@ -29,6 +29,7 @@ Note the `fail2ban_jail` field. If you're going to pick up your logs from fail2b
 | `source`          | `str`      | `blank`           | **Yes**  | Where to pull the file from, can be a `http(s)://` or `s3://` URL. |
 | `fail2ban_client` | `str`      | `fail2ban_client` | No       |  The path to the `fail2ban-client` executable, in case it's not in the user's `$PATH` |
 | `schedule_mins`   | `int`      | 15                | No       | How often to run the action. |
+| `ignore_list`     | `List[str]`| '["127.0.0.1",]`  | No       | A list of IPs which will never be added to the ban list. |
 | `s3_endpoint`     | `str`      |                   | No       | The endpoint URL if you need to force it for s3, eg if you're using minio or another S3-compatible store. |
 | `s3_v4`           | `bool`     | `false`           | No       | Whether to force `s3_v4` requests (useful for minio) |
 | `s3_minio`        | `bool`     | `false`           | No       | Enable minio mode, force `s3_v4` requests |

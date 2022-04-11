@@ -55,6 +55,11 @@ def download_and_ban(
         logging_module.error("Failed to get response from downloader...")
 
     for element in data.data:
+
+        if element.ip in config_object.ignore_list:
+            logging_module.debug("Skipping %s, in ignore list", element.ip)
+            continue
+
         if config_object.dryrun:
             logging_module.info(
                 "I'd totally be banning %s in jail %s right now, else I'm in dry-run mode!",
