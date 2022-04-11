@@ -4,6 +4,8 @@
 
 import logging
 import subprocess
+from typing import Any
+from .fail2ban_types import ConfigFile, Fail2BanData
 
 
 def ban_action(
@@ -40,3 +42,30 @@ def ban_action(
         )
         return False
     return True
+
+
+def download_and_ban(
+    logging_module: logging.Logger,
+    download_module: Any,
+    config_object: ConfigFile,
+    ) -> None:
+    """ download and ban bit """
+    data: Fail2BanData = download_module.download()
+    if data is None:
+        logging_module.error("Failed to get response from downloader...")
+
+    for element in data.data:
+        if config_object.dryrun:
+            logging_module.info(
+                "I'd totally be banning %s in jail %s right now, else I'm in dry-run mode!",
+                element.ip,
+                config_object.fail2ban_jail,
+            )
+            continue
+
+        ban_action(
+            client_command=config_object.fail2ban_client,
+            logger=logging_module,
+            jail_name=config_object.fail2ban_jail,
+            target_ip=element.ip,
+        )

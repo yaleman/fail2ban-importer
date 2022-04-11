@@ -9,13 +9,12 @@ import json
 import logging
 import os
 from time import sleep
-from typing import Any
 
 import click
 import schedule # type: ignore
 
-from . import ban_action, downloaders
-from .fail2ban_types import ConfigFile, Fail2BanData
+from . import download_and_ban, downloaders
+from .fail2ban_types import ConfigFile
 from .utils import load_config
 
 VALID_LOGLEVELS = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARNING"]
@@ -31,32 +30,6 @@ logging.basicConfig(
 )
 
 logging.debug("Running %s", os.path.basename(__file__))
-
-def download_and_ban(
-    logging_module: logging.Logger,
-    download_module: Any,
-    config_object: ConfigFile,
-    ) -> None:
-    """ download and ban bit """
-    data: Fail2BanData = download_module.download()
-    if data is None:
-        logging_module.error("Failed to get response from downloader...")
-
-    for element in data.data:
-        if config_object.dryrun:
-            logging_module.info(
-                "I'd totally be banning %s in jail %s right now, else I'm in dry-run mode!",
-                element.ip,
-                config_object.fail2ban_jail,
-            )
-            continue
-
-        ban_action(
-            client_command=config_object.fail2ban_client,
-            logger=logging_module,
-            jail_name=config_object.fail2ban_jail,
-            target_ip=element.ip,
-        )
 
 @click.command()
 @click.option("--dryrun", "-n", is_flag=True, default=False, help="Make no changes, just test download and parse")
