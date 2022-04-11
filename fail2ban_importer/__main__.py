@@ -8,14 +8,13 @@ import json
 
 import logging
 import os
-import subprocess
 from time import sleep
 from typing import Any
 
 import click
 import schedule
 
-from . import downloaders
+from . import ban_action, downloaders
 from .fail2ban_types import ConfigFile, Fail2BanData
 from .utils import load_config
 
@@ -32,35 +31,6 @@ logging.basicConfig(
 )
 
 logging.debug("Running %s", os.path.basename(__file__))
-
-def ban_action(client_command: str, jail_name: str, target_ip: str) -> bool:
-    """ actually does the ban bit """
-    command = [
-        client_command,
-        "set",
-        jail_name,
-        "banip",
-        target_ip,
-    ]
-    try:
-        result = subprocess.run(command, check=True, capture_output=True)
-        # logging.debug(result)
-        if result.stdout.decode("utf-8").strip() == "1":
-            logging.debug("Success")
-        elif result.stdout.decode("utf-8").strip() == "0":
-            logging.debug("%s already in %s", target_ip, jail_name)
-        else:
-            logging.error("Unexpected output: %s", result.stdout.decode("utf-8").strip())
-    except subprocess.CalledProcessError as called_process_error:
-        command_joined = " ".join(command)
-        logging.error(
-            "Error running '%s': stdout='%s', stderr='%s'",
-            command_joined,
-            called_process_error.stdout,
-            called_process_error.stderr,
-        )
-        return False
-    return True
 
 def download_and_ban(
     logging_module: logging.Logger,
