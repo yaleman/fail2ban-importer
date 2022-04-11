@@ -18,6 +18,7 @@ def load_config(
         filepath = Path(test_path).expanduser().resolve()
         if not filepath.exists():
             logger.debug("%s not found", filepath)
+            continue
         config_file: Dict[str, Any] = json.load(filepath.open(encoding="utf-8"))
         return config_file
     raise FileNotFoundError("Couldn't find a configuration file...")
