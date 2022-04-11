@@ -5,29 +5,14 @@
 import json
 
 import logging
-import os
 from time import sleep
 
 import click
 import schedule # type: ignore
 
-from . import download_and_ban, downloaders
+from . import download_and_ban, downloaders, setup_logging
 from .fail2ban_types import ConfigFile
 from .utils import load_config
-
-VALID_LOGLEVELS = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARNING"]
-
-loglevel = os.getenv("LOG_LEVEL", "INFO").upper()
-if not hasattr(logging, loglevel):
-    raise ValueError(
-        f"Invalid log level specified, got {loglevel}, should be in {VALID_LOGLEVELS}"
-    )
-
-logging.basicConfig(
-    format="%(levelname)s %(message)s", level=getattr(logging, loglevel)
-)
-
-logging.debug("Running %s", os.path.basename(__file__))
 
 @click.command()
 @click.option("--dryrun", "-n", is_flag=True, default=False, help="Make no changes, just test download and parse")
@@ -42,12 +27,11 @@ def cli(
     config.dryrun = dryrun
     config.oneshot = oneshot
 
-    logger = logging.getLogger()
-    logger.setLevel(level=getattr(logging, config.log_level))
+    logger = setup_logging(config.log_level)
+
     logger.debug(
         "Config: %s", json.dumps(config, indent=4, ensure_ascii=False, default=str)
     )
-
     download_module = getattr(downloaders,config.download_module)
 
     download_and_ban(logger, download_module, config)

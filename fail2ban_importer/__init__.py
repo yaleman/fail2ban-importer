@@ -74,3 +74,13 @@ def download_and_ban(
             jail_name=config_object.fail2ban_jail,
             target_ip=element.ip,
         )
+
+def setup_logging(log_level:str) -> logging.Logger:
+    """ sets up logging """
+    logger = logging.getLogger()
+    if hasattr(logging, log_level.upper()):
+        logger.setLevel(level=getattr(logging, log_level.upper()))
+    else:
+        logger.error("Invalid log level set, defaulting to debug: %s", log_level.upper())
+        logger.setLevel(level=logging.DEBUG)
+    return logger
