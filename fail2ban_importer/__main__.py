@@ -71,8 +71,15 @@ def download_and_ban(
     data: Fail2BanData = download_module.download()
     if data is None:
         logging_module.error("Failed to get response from downloader...")
-    for element in data.data:
+    if config_object.dryrun:
+        logging_module.info(
+            "I'd totally be banning %s in jail %s right now, else I'm in dry-run mode!",
+            element.ip,
+            config_object.fail2ban_jail,
+        )
+        return
 
+    for element in data.data:
         ban_action(
             config_object.fail2ban_client,
             config_object.fail2ban_jail,
