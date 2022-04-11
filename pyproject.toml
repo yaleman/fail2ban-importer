@@ -5,6 +5,8 @@ description = "Takes banlists and uses fail2ban to block them"
 authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
 license = "MIT"
 
+readme = "README.md"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 requests = "^2.27.1"
