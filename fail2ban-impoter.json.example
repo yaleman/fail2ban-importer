@@ -1,7 +1,0 @@
-{
-    "source": "https://example.com/fail2ban.json",
-    "jail_field": "service",
-    "jail_target": "src",
-    "fail2ban_client": "/usr/bin/fail2ban-client",
-    "schedule_mins" : 1
-}

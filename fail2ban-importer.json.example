@@ -1,0 +1,4 @@
+{
+    "fail2ban_client": "/usr/bin/fail2ban-client",
+    "schedule_mins" : 1
+}
