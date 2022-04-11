@@ -8,6 +8,7 @@ import subprocess
 
 def ban_action(
     client_command: str,
+    logger: logging.Logger,
     jail_name: str,
     target_ip: str,
     ) -> bool:
@@ -23,16 +24,15 @@ def ban_action(
         result = subprocess.run(command, check=True, capture_output=True)
         stdout = result.stdout.decode("utf-8").strip()
         if stdout == "1":
-            logging.info("Banned %s", target_ip)
+            logger.info("Banned %s", target_ip)
             return True
-        elif stdout == "0":
-            logging.info("%s already in %s", target_ip, jail_name)
+        if stdout == "0":
+            logger.info("%s already in %s", target_ip, jail_name)
             return False
-        else:
-            logging.error("Unexpected output: %s", stdout)
+        logger.error("Unexpected output: %s", stdout)
     except subprocess.CalledProcessError as called_process_error:
         command_joined = " ".join(command)
-        logging.error(
+        logger.error(
             "Error running '%s': stdout='%s', stderr='%s'",
             command_joined,
             called_process_error.stdout,

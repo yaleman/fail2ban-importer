@@ -12,7 +12,7 @@ from time import sleep
 from typing import Any
 
 import click
-import schedule
+import schedule # type: ignore
 
 from . import ban_action, downloaders
 from .fail2ban_types import ConfigFile, Fail2BanData
@@ -52,9 +52,10 @@ def download_and_ban(
             continue
 
         ban_action(
-            config_object.fail2ban_client,
-            config_object.fail2ban_jail,
-            element.ip,
+            client_command=config_object.fail2ban_client,
+            logger=logging_module,
+            jail_name=config_object.fail2ban_jail,
+            target_ip=element.ip,
         )
 
 @click.command()
