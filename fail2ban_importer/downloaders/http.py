@@ -11,33 +11,27 @@ import requests.exceptions
 from ..fail2ban_types import ConfigFileHTTP, Fail2BanData
 from ..utils import load_config
 
-def download() -> Optional[Fail2BanData]:
+def download(config_path: Optional[str]) -> Optional[Fail2BanData]:
     """ downloads the source file using the requests library """
 
-    config = ConfigFileHTTP.parse_obj(load_config())
-
-    logger = logging.getLogger("HTTP")
-    if config.log_level in dir(logging):
-        logger.setLevel(getattr(logging, config.log_level))
-    else:
-        raise ValueError(f"Invalid log level: {config.log_level}")
-    logger.debug("Download config: %s", config.json())
+    config = ConfigFileHTTP.parse_obj(load_config(config_path))
+    logging.debug("Download config: %s", config.json())
 
     session = Session()
 
     if config.proxies:
-        logger.debug("Setting proxies to %s", config.proxies)
+        logging.debug("Setting proxies to %s", config.proxies)
         session.proxies = config.proxies
 
     try:
-        logger.debug("Downloading from %s", config.source)
+        logging.debug("Downloading from %s", config.source)
         response = session.request(
             url=config.source,
             method=config.http_method,
         )
         response.raise_for_status()
     except requests.exceptions.HTTPError as http_error:
-        logger.error(
+        logging.error(
             "Failed to download from '%s': %s",
             config.source,
             http_error,
@@ -45,9 +39,11 @@ def download() -> Optional[Fail2BanData]:
 
     try:
         data = Fail2BanData(data=response.json())
-        logger.debug(data.dict())
+        logging.debug(data.dict())
+        if data is None:
+            return None
         for element in data.data:
-            logger.debug(element.jail)
+            logging.debug(element.jail)
     except JSONDecodeError as json_error:
         logging.error("Failed to parse response: %s", json_error)
         logging.error("First 1000 chars of response: %s", response.content[:1000])

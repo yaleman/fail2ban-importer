@@ -15,19 +15,19 @@ from ..utils import load_config
 from ..fail2ban_types import ConfigFileS3, Fail2BanData
 
 def download(
-    logger: logging.Logger=logging.getLogger(),
+    config_file: Optional[str],
     ) -> Optional[Fail2BanData]:
     """ downloads the source file using the requests library """
 
-    config = ConfigFileS3.parse_obj(load_config())
-    logger.debug(config.json())
+    config = ConfigFileS3.parse_obj(load_config(config_file))
+    logging.debug(config.json())
 
     # try and pull apart the s3 url
     try:
         parsed_s3_url = urlparse(config.source)
-        logger.debug(parsed_s3_url)
+        logging.debug(parsed_s3_url)
     except ValueError as url_parser_error:
-        logger.error(
+        logging.error(
             "Failed to parse s3 url  '%s': %s",
             config.source,
             url_parser_error,
@@ -44,7 +44,7 @@ def download(
             if hasattr(config, var):
                 os.environ[var] = getattr(config, var)
 
-    logger.debug("Creating s3 client")
+    logging.debug("Creating s3 client")
     s3_config = None
     if config.s3_minio or config.s3_v4:
         s3_config = boto3.session.Config(signature_version="v4")  # type: ignore

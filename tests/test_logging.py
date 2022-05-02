@@ -3,7 +3,7 @@
 import logging
 import fail2ban_importer
 
-def test_setup_logging():
+def test_setup_logging() -> None:
     """ this is a gimmie """
 
     logger = fail2ban_importer.setup_logging("INFO")

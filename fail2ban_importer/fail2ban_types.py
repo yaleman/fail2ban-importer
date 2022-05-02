@@ -9,10 +9,9 @@ class ConfigFile(BaseModel):
     """ config file for fail2ban-importer """
     download_module: str = "http"
     source: str = "https://raw.githubusercontent.com/yaleman/fail2ban-importer/main/example.json"
-
     log_level: str = "INFO"
     fail2ban_client: str = "fail2ban-client"
-    fail2ban_jail: str
+    fail2ban_jail: str = "fail2ban-importer"
     schedule_mins: int = 15
     dryrun: bool = False
     oneshot: bool = False
