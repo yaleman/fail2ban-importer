@@ -1,9 +1,5 @@
-version: 2
 updates:
-- package-ecosystem: pip
-  directory: /
-  schedule:
-    interval: weekly
-    day: saturday
-    time: 02:00
-    timezone: Australia/Brisbane
+- directory: /
+  package-ecosystem: pip
+  schedule: {day: saturday, interval: weekly, time: 02:00, timezone: Australia/Brisbane}
+version: 2
