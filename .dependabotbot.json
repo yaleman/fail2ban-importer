@@ -1,0 +1,6 @@
+{
+    "auto_merge" : [
+        "requests",
+        "pydantic"
+    ]
+}

@@ -2,6 +2,7 @@
 __pycache__/*
 *.json
 !example.json
+!.dependabotbot.json
 venv/
 .DS_Store
 **/__pycache__/*
