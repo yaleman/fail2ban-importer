@@ -1,6 +1,7 @@
 {
     "auto_merge" : [
         "requests",
-        "pydantic"
+        "pydantic",
+	"boto3"
     ]
 }
