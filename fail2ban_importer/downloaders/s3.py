@@ -1,5 +1,6 @@
 """ s3 downloader """
 
+import json
 from json.decoder import JSONDecodeError
 import logging
 import os
@@ -41,7 +42,7 @@ def download(
         "AWS_PROFILE",
     ]:
         if not os.getenv(var, None):
-            if hasattr(config, var):
+            if hasattr(config, var) and getattr(config, var) is not None:
                 os.environ[var] = getattr(config, var)
 
     logging.debug("Creating s3 client")
@@ -70,12 +71,15 @@ def download(
         logging.error("botocore.exceptions.ClientError: %s", client_error)
         return None
     try:
-        content = contents.get("Body").read()
+        if "Body" not in contents:
+            raise ValueError("Failed to get a Body from S3 Call")
+
+        content = json.loads(contents["Body"].read().decode("utf-8"))
         return Fail2BanData(data=content)
     except JSONDecodeError as json_error:
         logging.error("Failed to parse response: %s", json_error)
         logging.error("First 1000 chars of response: %s", content[:1000])
     except pydantic.error_wrappers.ValidationError as validation_error:
-        logging.error("Failed to parse response: %s", validation_error)
+        logging.error("Failed to parse response from s3: %s", validation_error)
         logging.error("First 1000 chars of response: %s", content[:1000])
     return None
