@@ -73,14 +73,15 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.24.25"
-description = "Type annotations for boto3 1.24.25 generated with mypy-boto3-builder 7.7.2"
+version = "1.24.31"
+description = "Type annotations for boto3 1.24.31 generated with mypy-boto3-builder 7.9.1"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
 botocore-stubs = "*"
+types-s3transfer = "*"
 typing-extensions = ">=4.1.0"
 
 [package.extras]
@@ -785,6 +786,14 @@ python-versions = "*"
 types-urllib3 = "<1.27"
 
 [[package]]
+name = "types-s3transfer"
+version = "0.6.0"
+description = "Type annotations and code completion for s3transfer"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-urllib3"
 version = "1.26.14"
 description = "Typing stubs for urllib3"
@@ -824,7 +833,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "1bd21ec6d72c7497b75aa263d556f372d34ba560b76f8d66dec3ff84a376e7f6"
+content-hash = "8638cde84f6a56f1ed155a2d4fd2d0b39761552f95f1afaf26066c5fee33d650"
 
 [metadata.files]
 astroid = [
@@ -869,8 +878,8 @@ boto3 = [
     {file = "boto3-1.24.30.tar.gz", hash = "sha256:ac1a4a9070101f42062461d8e829dd97f77b6e091bcc8cddee577739b28d39bb"},
 ]
 boto3-stubs = [
-    {file = "boto3-stubs-1.24.25.tar.gz", hash = "sha256:89406d1952f352119213c75100a98e9a10bafff0a3c893619442d1048ea8ad29"},
-    {file = "boto3_stubs-1.24.25-py3-none-any.whl", hash = "sha256:ddd5821abbcd1742a28a9f2aa4ef79e13e0de6fab87799fe79f9630114467b07"},
+    {file = "boto3-stubs-1.24.31.tar.gz", hash = "sha256:dd1e027bf894a8d4dc509681c86160c70e1974d215813bca857ebf4123a8b307"},
+    {file = "boto3_stubs-1.24.31-py3-none-any.whl", hash = "sha256:5d110c382c68a14f1117e584b134e8d7e172b5665e54292b1ad22354fa07df45"},
 ]
 botocore = [
     {file = "botocore-1.27.30-py3-none-any.whl", hash = "sha256:953b9b4c0033280b2229e6e9c5de3ad2e56b887aec02c85680a2156842212092"},
@@ -1094,6 +1103,10 @@ tomlkit = [
 types-requests = [
     {file = "types-requests-2.28.1.tar.gz", hash = "sha256:acd8ed78509d27bdf04cddcc05f7066dfde4d30dd7dba67b808cdb1141d62ffe"},
     {file = "types_requests-2.28.1-py3-none-any.whl", hash = "sha256:b097692e124001f0ed5e4490245bb090f5e8e929819972f9ace84f9c3e146e8c"},
+]
+types-s3transfer = [
+    {file = "types-s3transfer-0.6.0.tar.gz", hash = "sha256:e6d71efb01985fc8561b951230f93c4062075b88adf293142b2d4b835c2cae63"},
+    {file = "types_s3transfer-0.6.0-py3-none-any.whl", hash = "sha256:8d1fb95aacc55e012c31d7c3e4370e2c1e9fcad29585941d9e0832435368a737"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.14.tar.gz", hash = "sha256:2a2578e4b36341ccd240b00fccda9826988ff0589a44ba4a664bbd69ef348d27"},
