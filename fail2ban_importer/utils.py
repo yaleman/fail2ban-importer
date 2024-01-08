@@ -12,10 +12,11 @@ CONFIG_PATHS = [
     "~/.config/fail2ban-importer.json",
 ]
 
+
 def load_config(
     config_file: Optional[str],
-    ) -> Dict[str, Any]:
-    """ loads config """
+) -> Dict[str, Any]:
+    """loads config"""
 
     test_paths = CONFIG_PATHS
     if config_file is not None:
@@ -39,4 +40,3 @@ def load_config(
             sys.exit(1)
         return config_contents
     return {}
-    #raise FileNotFoundError("Couldn't find a configuration file...")

@@ -1,20 +1,19 @@
 [tool.poetry]
 name = "fail2ban-importer"
-version = "0.0.9"
+version = "0.0.10"
 description = "Takes banlists and uses fail2ban to block them"
-authors = [
-    "James Hodgkinson <james@terminaloutcomes.com>",
-]
+authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 requests = "^2.27.1"
 pydantic = ">=1.9,<3.0"
 schedule = "^1.1.0"
 boto3 = "^1.21.37"
 click = "^8.1.2"
+pydantic-settings = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pylint-pytest = "^1.1.2"
@@ -38,7 +37,5 @@ load-plugins = "pylint_pydantic"
 plugins = "pydantic.mypy"
 
 [build-system]
-requires = [
-    "poetry-core>=1.0.0",
-]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
