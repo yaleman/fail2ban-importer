@@ -15,13 +15,14 @@ import pydantic.error_wrappers
 from ..utils import load_config
 from ..fail2ban_types import ConfigFileS3, Fail2BanData
 
+
 def download(
     config_file: Optional[str],
-    ) -> Optional[Fail2BanData]:
-    """ downloads the source file using the requests library """
+) -> Optional[Fail2BanData]:
+    """downloads the source file using the requests library"""
 
-    config = ConfigFileS3.parse_obj(load_config(config_file))
-    logging.debug(config.json())
+    config = ConfigFileS3.model_validate(load_config(config_file))
+    logging.debug(config.model_dump_json())
 
     # try and pull apart the s3 url
     try:
@@ -64,7 +65,7 @@ def download(
     try:
         s3_object = s3_resource.Object(
             bucket_name=parsed_s3_url.netloc,
-            key=parsed_s3_url.path.lstrip("/"),
+            key=str(parsed_s3_url.path).lstrip("/"),
         )
         contents = s3_object.get()
     except botocore.exceptions.ClientError as client_error:

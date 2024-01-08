@@ -11,11 +11,12 @@ import requests.exceptions
 from ..fail2ban_types import ConfigFileHTTP, Fail2BanData
 from ..utils import load_config
 
-def download(config_path: Optional[str]) -> Optional[Fail2BanData]:
-    """ downloads the source file using the requests library """
 
-    config = ConfigFileHTTP.parse_obj(load_config(config_path))
-    logging.debug("Download config: %s", config.json())
+def download(config_path: Optional[str]) -> Optional[Fail2BanData]:
+    """downloads the source file using the requests library"""
+
+    config = ConfigFileHTTP.model_validate(load_config(config_path))
+    logging.debug("Download config: %s", config.model_dump_json())
 
     session = Session()
 
@@ -35,11 +36,11 @@ def download(config_path: Optional[str]) -> Optional[Fail2BanData]:
             "Failed to download from '%s': %s",
             config.source,
             http_error,
-            )
+        )
 
     try:
         data = Fail2BanData(data=response.json())
-        logging.debug(data.dict())
+        logging.debug(data.model_dump())
         if data is None:
             return None
         for element in data.data:
