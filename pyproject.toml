@@ -1,31 +1,39 @@
-[tool.poetry]
+[project]
 name = "fail2ban-importer"
-version = "0.0.10"
+version = "0.0.11"
 description = "Takes banlists and uses fail2ban to block them"
-authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
-license = "MIT"
 readme = "README.md"
+authors = [{ name = "James Hodgkinson", email = "james@terminaloutcomes.com" }]
+license = "MIT"
+requires-python = "<4.0,>=3.10"
+dependencies = [
+    "requests",
+    "pydantic",
+    "schedule",
+    "boto3",
+    "click",
+    "pydantic-settings",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-requests = "^2.27.1"
-pydantic = ">=1.9,<3.0"
-schedule = "^1.1.0"
-boto3 = "^1.21.37"
-click = "^8.1.2"
-pydantic-settings = "^2.1.0"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.dev-dependencies]
-pylint-pytest = "^1.1.2"
-pytest = "^8.0.0"
-black = "^25.1.0"
-mypy = "^1.0"
-pylint-pydantic = "^0.3.0"
-types-requests = "^2.28.11"
-boto3-stubs = "^1.24.95"
-
-[tool.poetry.scripts]
+[project.scripts]
 fail2ban-importer = "fail2ban_importer.__main__:cli"
+
+[dependency-groups]
+dev = [
+    "pylint-pytest",
+    "pytest",
+    "black",
+    "mypy",
+    "pylint-pydantic",
+    "types-requests",
+    "boto3-stubs",
+    "ruff",
+]
+
 
 [tool.pylint.MASTER]
 max-line-length = 200
@@ -35,7 +43,3 @@ load-plugins = "pylint_pydantic"
 
 [tool.mypy]
 plugins = "pydantic.mypy"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"

@@ -1,9 +1,9 @@
-""" Downloads JSON-encoded lists from s3 or HTTPS endpoints and bans them
-
-"""
+"""Downloads JSON-encoded lists from s3 or HTTPS endpoints and bans them"""
 
 import logging
+from shutil import which
 import subprocess
+import sys
 from typing import Any, Optional
 from .fail2ban_types import ConfigFile, Fail2BanData
 
@@ -12,8 +12,8 @@ def ban_action(
     client_command: str,
     jail_name: str,
     target_ip: str,
-    ) -> bool:
-    """ actually does the ban bit """
+) -> bool:
+    """actually does the ban bit"""
     command = [
         client_command,
         "set",
@@ -30,6 +30,9 @@ def ban_action(
         if stdout == "0":
             logging.info("%s already in %s", target_ip, jail_name)
             return False
+        if stdout == " ".join(command[1:]) and command[0] == "echo":
+            logging.info("OK: echo came back with: %s", stdout)
+            return True
         logging.error("Unexpected output: %s", stdout)
     except subprocess.CalledProcessError as called_process_error:
         command_joined = " ".join(command)
@@ -47,14 +50,13 @@ def download_and_ban(
     download_module: Any,
     config_path: Optional[str],
     config_object: ConfigFile,
-    ) -> None:
-    """ download and ban bit """
+) -> None:
+    """download and ban bit"""
     data: Fail2BanData = download_module.download(config_path)
     if data is None:
         logging.error("Failed to get response from downloader...")
         return
     for element in data.data:
-
         if element.ip in config_object.ignore_list:
             logging.debug("Skipping %s, in ignore list", element.ip)
             continue
@@ -67,21 +69,31 @@ def download_and_ban(
             )
             continue
 
+        if not which(config_object.fail2ban_client):
+            logging.error(
+                "Could not find configured fail2ban client: %s",
+                config_object.fail2ban_client,
+            )
+            sys.exit(1)
+
         ban_action(
             client_command=config_object.fail2ban_client,
             jail_name=config_object.fail2ban_jail,
             target_ip=element.ip,
         )
 
+
 def setup_logging(
-    log_level:str,
-    ) -> logging.Logger:
-    """ sets up logging """
+    log_level: str,
+) -> logging.Logger:
+    """sets up logging"""
     logger = logging.getLogger()
 
     if hasattr(logging, log_level.upper()):
         logger.setLevel(level=getattr(logging, log_level.upper()))
     else:
-        logging.error("Invalid log level set, defaulting to debug: %s", log_level.upper())
+        logging.error(
+            "Invalid log level set, defaulting to debug: %s", log_level.upper()
+        )
         logger.setLevel(level=logging.DEBUG)
     return logger
